@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuralFlow v2.0</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}?v=3.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="background-globes">
+        <div class="aurora aurora-1"></div>
+        <div class="aurora aurora-2"></div>
+        <div class="aurora aurora-3"></div>
+        <div class="noise-overlay"></div>
+    </div>
+
+    <div class="app-interface">
+        <header class="app-header centered-header">
+            <div class="brand">
+                <i class="fa-solid fa-bolt-lightning"></i>
+                <span>Neural<span class="accent">Flow</span></span>
+            </div>
+            <div class="status">
+                <span class="status-dot"></span> Operational
+            </div>
+        </header>
+
+        <main class="chat-container" id="chat-window">
+            <div class="welcome-hero" id="welcome-screen">
+                <div class="hero-icon">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+                <h1>NeuralFlow v2.0</h1>
+                <p>Advanced reasoning with persistent memory and grounded web intelligence.</p>
+            </div>
+        </main>
+
+        <footer class="input-section">
+            <div class="input-container">
+                <form id="chat-form">
+                    <textarea id="user-input" placeholder="Ask me anything..." rows="1" autocomplete="off"></textarea>
+                    <button type="submit" id="send-btn" class="submit-btn" title="Send message">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </form>
+                <div class="help-text">
+                    Learning from conversation • Grounded in Search
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', path='script.js') }}"></script>
+</body>
+
+</html>

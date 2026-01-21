@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "simple-chatbot"
+version = "0.1.0"
+description = "A simple chatbot with medical expertise and long-term memory."
+authors = ["Admin <admin@example.com>"]
+readme = "README.md"
+packages = [{include = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+langchain = "^0.3.0" # Updated to likely stable version compatible with community
+langchain-community = "*"
+langchain-text-splitters = "*"
+chromadb = "*"
+sentence-transformers = "*"
+numpy = "*"
+requests = "*"
+duckduckgo-search = "*" # Correcting 'ddgs' to the actual package name 'duckduckgo-search' which provides 'duckduckgo_search' or 'ddgs' module in some versions, but standard is duckduckgo-search. Wait, if the code imports 'ddgs', it implies an older version or specific wrapper. I will stick to 'duckduckgo-search' but note the import might need to change to 'duckduckgo_search' if the package provides that.
+# NOTE: The code uses `from ddgs import DDGS`. There is a pypi package `ddgs`? No, usually `duckduckgo-search`. 
+# However, to be safe and match the user's requirements exactly:
+ddgs = "*" 
+bcrypt = "*"
+python-jose = {extras = ["cryptography"], version = "*"}
+fastapi = {extras = ["standard"], version = "^0.128.0"}
+uvicorn = "*"
+jinja2 = "*"
+python-multipart = "*"
+gradio = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

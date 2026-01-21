@@ -1,0 +1,2 @@
+Agents in NLP are programs that can take actions using tools.
+They are often combined with RAG systems to answer complex queries.

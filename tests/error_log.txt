@@ -1,0 +1,14 @@
+WARNING:huggingface_hub.utils._http:'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: a28820c5-9c8b-4e04-acd8-b28a5237a3cf)')' thrown while requesting HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/1_Pooling/config.json
+WARNING:huggingface_hub.utils._http:Retrying in 1s [Retry 1/5].
+WARNING:huggingface_hub.utils._http:'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 21652cc1-878c-438f-8760-41aa14b895cc)')' thrown while requesting HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/./config_sentence_transformers.json
+WARNING:huggingface_hub.utils._http:Retrying in 1s [Retry 1/5].
+WARNING:huggingface_hub.utils._http:'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: b72d6230-e08e-4072-9f3c-3f549c83845f)')' thrown while requesting HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/./modules.json
+WARNING:huggingface_hub.utils._http:Retrying in 1s [Retry 1/5].
+WARNING:huggingface_hub.utils._http:'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 22dc835e-79c5-4a8b-84b3-b5e9f10558ed)')' thrown while requesting HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/./sentence_bert_config.json
+WARNING:huggingface_hub.utils._http:Retrying in 1s [Retry 1/5].
+WARNING:huggingface_hub.utils._http:'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 4d5db747-428c-475d-8b2b-c882b1edc7be)')' thrown while requesting HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/1_Pooling/config.json
+WARNING:huggingface_hub.utils._http:Retrying in 1s [Retry 1/5].
+WARNING:huggingface_hub.utils._http:'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 8fdb6956-cf16-43e4-b738-9c53138be978)')' thrown while requesting HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/1_Pooling/config.json
+WARNING:huggingface_hub.utils._http:Retrying in 2s [Retry 2/5].
+WARNING:huggingface_hub.utils._http:'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 42407881-cd6c-4ab2-adde-285bf4e9f062)')' thrown while requesting HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/./config_sentence_transformers.json
+WARNING:huggingface_hub.utils._http:Retrying in 1s [Retry 1/5].
