@@ -42,5 +42,15 @@ MAX_HISTORY_LIMIT = 100
 # How many recent messages (turns) the Brain/Agent actually "sees" 
 # to make decisions. Too many = confuses the AI, Too few = loses context.
 CONTEXT_WINDOW_SIZE = 30
+
+# MEMORY_CONFIDENCE_THRESHOLD:
+# Minimum similarity score (0.0-1.0) required for memory retrieval.
+# Lower = more permissive matching, Higher = stricter matching.
+MEMORY_CONFIDENCE_THRESHOLD = 0.28
+
+# MEDICAL_COMPLETION_MARKERS:
+# Phrases that indicate the medical agent has completed its diagnosis.
+# Used to unlock from MEDICAL mode.
+MEDICAL_COMPLETION_MARKERS = ["Final_Answer", "Possible Causes", "Next Steps", "Severity Level"]
 # deprecated.
 # How to Run: run python -m uvicorn web_app:app --host 127.0.0.1 --port 8000 --reload Then visit: http://127.0.0.1:8000

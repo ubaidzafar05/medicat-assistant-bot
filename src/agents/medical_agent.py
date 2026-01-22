@@ -14,44 +14,78 @@ class MedicalReActAgent:
         self.llm = GroqLLM()
         self.search_tool = SearchTool()
         self.max_steps = 5
-        
-        # Patterns for auto-extracting vitals from user messages
-        self.vital_patterns = [
-            (r'heart\s*rate.*?(\d{2,3})', 'Heart Rate', 'bpm'),
-            (r'heartbeat.*?(\d{2,3})', 'Heart Rate', 'bpm'),
-            (r'pulse.*?(\d{2,3})', 'Heart Rate', 'bpm'),
-            (r'(\d{2,3})\s*(?:bpm|beats)', 'Heart Rate', 'bpm'),
-            (r'blood\s*pressure.*?(\d{2,3}[/]\d{2,3})', 'Blood Pressure', 'mmHg'),
-            (r'bp.*?(\d{2,3}[/]\d{2,3})', 'Blood Pressure', 'mmHg'),
-            (r'(\d{2,3}[/]\d{2,3})\s*(?:mmhg|mm)', 'Blood Pressure', 'mmHg'),
-            (r'temperature.*?(\d{2,3}\.?\d?)', 'Temperature', '°F'),
-            (r'temp.*?(\d{2,3}\.?\d?)\s*(?:f|fahrenheit|°f)', 'Temperature', '°F'),
-            (r'temp.*?(\d{2}\.?\d?)\s*(?:c|celsius|°c)', 'Temperature', '°C'),
-            (r'weight.*?(\d{2,3}\.?\d?)\s*(?:kg|kilogram)', 'Weight', 'kg'),
-            (r'weight.*?(\d{2,3}\.?\d?)\s*(?:lb|lbs|pound)', 'Weight', 'lbs'),
-            (r'oxygen.*?(\d{2,3})\s*%?', 'Oxygen Saturation', '%'),
-            (r'spo2.*?(\d{2,3})', 'Oxygen Saturation', '%'),
-        ]
     
+    def extract_vitals_llm(self, user_input):
+        """
+        Uses LLM to extract vitals from free text input.
+        Handles natural language like "my pulse is around one hundred".
+        Returns list of dicts: [{"type": "Heart Rate", "value": "100", "unit": "bpm"}, ...]
+        """
+        extraction_prompt = f'''
+Extract any health vitals mentioned in this text. Return JSON only.
+TEXT: "{user_input}"
+
+RULES:
+1. Return ONLY valid JSON. No markdown, no extra text.
+2. Extract these vital types if mentioned:
+   - Heart Rate (pulse, heartbeat) -> unit: bpm
+   - Blood Pressure -> unit: mmHg (format: systolic/diastolic)
+   - Temperature -> unit: °F or °C
+   - Weight -> unit: kg or lbs
+   - Oxygen Saturation (SpO2) -> unit: %
+3. Convert word numbers to digits (e.g., "one hundred" -> "100")
+4. If no vitals mentioned, return {{"vitals": []}}
+
+JSON FORMAT:
+{{
+  "vitals": [
+    {{ "type": "Heart Rate", "value": "80", "unit": "bpm" }}
+  ]
+}}
+'''
+        try:
+            response = self.llm(extraction_prompt)
+            if not response:
+                return []
+            
+            # Clean JSON (strip markdown code blocks if any)
+            clean_json = response.replace("```json", "").replace("```", "").strip()
+            if "{" in clean_json:
+                clean_json = clean_json[clean_json.find("{"):clean_json.rfind("}")+1]
+            
+            data = json.loads(clean_json)
+            return data.get("vitals", [])
+            
+        except json.JSONDecodeError as e:
+            logger.warning(f"Failed to parse vitals JSON: {e}")
+            return []
+        except Exception as e:
+            logger.error(f"Vital extraction failed: {e}")
+            return []
+
     def auto_extract_and_save_vitals(self, user_input, session_manager):
         """
-        Automatically extracts and saves any vitals mentioned in user input.
+        Automatically extracts and saves any vitals mentioned in user input using LLM.
         Returns list of saved vitals for acknowledgment.
         """
         if not session_manager:
             return []
         
         saved_vitals = []
-        input_lower = user_input.lower()
         
-        for pattern, vital_type, unit in self.vital_patterns:
-            match = re.search(pattern, input_lower)
-            if match:
-                value = match.group(1)
+        # Use LLM-based extraction instead of regex patterns
+        vitals = self.extract_vitals_llm(user_input)
+        
+        for vital in vitals:
+            v_type = vital.get("type", "")
+            v_value = vital.get("value", "")
+            v_unit = vital.get("unit", "")
+            
+            if v_type and v_value:
                 try:
-                    session_manager.save_vital(vital_type, value, unit)
-                    saved_vitals.append(f"{vital_type}: {value} {unit}")
-                    logger.debug(f"Auto-saved vital: {vital_type} = {value} {unit}")
+                    session_manager.save_vital(v_type, v_value, v_unit)
+                    saved_vitals.append(f"{v_type}: {v_value} {v_unit}")
+                    logger.debug(f"Auto-saved vital: {v_type} = {v_value} {v_unit}")
                 except Exception as e:
                     logger.error(f"Error saving vital: {e}")
         
@@ -192,13 +226,15 @@ JSON FORMAT:
 {saved_context}
 {symptom_context}
 
-### REASONING PROCESS (AGGRESSIVE):
+### REASONING PROCESS (DIFFERENTIAL DIAGNOSIS):
 1. **CHECK HISTORY**: Did the user already mention the Symptom, Location, or Duration? **NEVER ASK AGAIN.**
-2. **MATCH & EXIT**: 
-   - User says "Back pain shooting to groin"? -> **IT IS KIDNEY STONES.** -> Use `Final_Answer`.
-   - User says "Blood in urine"? -> **IT IS SERIOUS.** -> Use `Final_Answer`.
-   - User says "Feels like kidneys"? -> **AGREE WITH THEM.** -> Use `Final_Answer`.
-3. **STOP LOOPING**: If you are about to ask a question, ask yourself: "Can I give a 'likely' diagnosis instead?" If yes, **DIAGNOSE**.
+2. **DIFFERENTIAL DIAGNOSIS**: 
+   - Consider multiple possible causes based on the symptom pattern.
+   - Use anatomical reasoning (e.g., pain radiation paths, organ locations).
+   - Ask clarifying questions only if they will significantly narrow down the diagnosis.
+3. **CONCLUDE WHEN READY**: If you have enough information to provide a likely diagnosis, use `Final_Answer`.
+   - Do not ask unnecessary questions if the diagnosis is reasonably clear.
+   - Always consider both common and serious conditions.
 
 ### TOOLS (STRICT FORMAT):
 You must use one of these formats to take action:

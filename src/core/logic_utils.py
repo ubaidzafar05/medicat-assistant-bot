@@ -97,8 +97,10 @@ Instructions:
         return
 
     # 6. CHAT (Enhanced Continuity)
-    history_content = str(history).lower()
-    is_mid_diagnosis = any(word in history_content for word in ["pain", "fever", "symptom", "headache"])
+    # Use intelligent state check instead of hardcoded keyword list
+    session_manager = components.get("session_manager")
+    active_mode = session_manager.get_active_mode() if session_manager else None
+    is_mid_diagnosis = (action == "MEDICAL" or active_mode == "MEDICAL")
 
     system_instruction = f"""
 You are a warm, professional Medical Specialist.

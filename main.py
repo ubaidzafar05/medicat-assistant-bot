@@ -7,7 +7,7 @@ from src.core.brain import Brain
 from src.services.llm_groq import GroqLLM
 from src.services.search_tool import SearchTool
 from src.agents.medical_agent import MedicalReActAgent
-from src.config import CONTEXT_WINDOW_SIZE
+from src.config import CONTEXT_WINDOW_SIZE, MEDICAL_COMPLETION_MARKERS
 from src.core.logic_utils import execute_chat_logic
 
 # ------------------------------------------------------------------------------
@@ -96,8 +96,8 @@ def chat_logic(message, history, request: gr.Request):
     session_manager.add_message("assistant", full_response)
         
     # --- UNLOCK CONDITION ---
-    # If the Medical Agent is done, release the lock
-    if action == "MEDICAL" and "Final_Answer" in full_response:
+    # If the Medical Agent is done, release the lock (using configurable markers)
+    if action == "MEDICAL" and any(marker in full_response for marker in MEDICAL_COMPLETION_MARKERS):
         session_manager.set_active_mode(None)
 
 # ------------------------------------------------------------------------------

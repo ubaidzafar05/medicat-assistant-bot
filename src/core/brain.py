@@ -6,7 +6,7 @@
 
 from src.services.vector_db import VectorDB
 from src.services.llm_groq import GroqLLM
-from src.config import CONTEXT_WINDOW_SIZE
+from src.config import CONTEXT_WINDOW_SIZE, MEMORY_CONFIDENCE_THRESHOLD
 
 class Brain:
     def __init__(self):
@@ -51,7 +51,7 @@ Keywords:"""
         results = self.vector_db.query(search_query, top_k=3)
 
         # Check for confidence threshold
-        if not results or results[0]['score'] < 0.28:
+        if not results or results[0]['score'] < MEMORY_CONFIDENCE_THRESHOLD:
             return None
 
         # 2️⃣ Build context strictly from memory
