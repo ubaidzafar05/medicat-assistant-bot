@@ -35,60 +35,63 @@ class GroqLLM(LLM):
         **kwargs: Any,
     ) -> str:
         """
-        Send prompt to Groq API and return the response.
-        
-        Args:
-            prompt (str): The text to send to the AI.
-            kwargs: Can contain 'history' (list of previous messages).
+        Send prompt to Groq API with retries and timeout.
         """
-        
+        import time
+        from requests.exceptions import RequestException
+
         # ----------------------------------------------------------------------
-        # Prepare Messages
+        # 1. Prepare Messages
         history = kwargs.get("history", [])
         system_prompt = kwargs.get("system_prompt")
-        
-        # Start with the conversation history (if any)
         messages = history.copy()
-
-        # Insert system prompt at the beginning if provided
         if system_prompt:
             messages.insert(0, {"role": "system", "content": str(system_prompt)})
-        
-        # Append the current prompt
         messages.append({"role": "user", "content": str(prompt)})
         
-        # Sanitize all messages to ensure content is string
         for m in messages:
-            if m.get("content") is None:
-                m["content"] = ""
-            else:
-                m["content"] = str(m["content"])
-        
+            m["content"] = str(m.get("content", ""))
+
         # ----------------------------------------------------------------------
         # 2. Build Request
-        # ----------------------------------------------------------------------
         headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
         payload = {
             "model": MODEL_NAME,
             "messages": messages,
-            "temperature": 0.2 # Controls creativity (0.0 = Fact, 1.0 = Creative)
+            "temperature": 0.2
         }
-        
-        # ----------------------------------------------------------------------
-        # 3. Execute HTTP Call
-        # ----------------------------------------------------------------------
-        response = requests.post(API_URL, headers=headers, json=payload)
 
         # ----------------------------------------------------------------------
-        # 4. Handle Response
-        # ----------------------------------------------------------------------
-        if response.status_code != 200:
-            return f"❌ Error {response.status_code}: {response.text}"
-        try:
-            # Extract just the text content from the deep JSON structure
-            return response.json()["choices"][0]["message"]["content"]
-        except (KeyError, IndexError):
-            return f"❌ Unexpected response format: {response.text}"
+        # 3. Execute HTTP Call with Retries
+        max_retries = 3
+        retry_delay = 2
+        
+        for attempt in range(max_retries):
+            try:
+                response = requests.post(API_URL, headers=headers, json=payload, timeout=30)
+                
+                if response.status_code == 200:
+                    try:
+                        return response.json()["choices"][0]["message"]["content"]
+                    except (KeyError, IndexError):
+                        return f"❌ Unexpected response format: {response.text}"
+                
+                # If rate limited (429) or server error (500+), retry
+                if response.status_code in [429, 500, 502, 503, 504]:
+                    print(f"[DEBUG-LLM] Attempt {attempt+1} failed with {response.status_code}. Retrying...")
+                    time.sleep(retry_delay * (attempt + 1))
+                    continue
+                
+                return f"❌ Error {response.status_code}: {response.text}"
+
+            except RequestException as e:
+                print(f"[DEBUG-LLM] Connection attempt {attempt+1} failed: {e}")
+                if attempt < max_retries - 1:
+                    time.sleep(retry_delay * (attempt + 1))
+                else:
+                    return f"❌ Connection Error: Unable to reach AI service after {max_retries} attempts."
+        
+        return "❌ Max retries reached without successful response."
     def stream(self, prompt: str, **kwargs) -> Any:
         """
         Streams the response from Groq API token by token.
@@ -114,7 +117,7 @@ class GroqLLM(LLM):
             "stream": True # Enable Streaming
         }
         
-        response = requests.post(API_URL, headers=headers, json=payload, stream=True)
+        response = requests.post(API_URL, headers=headers, json=payload, stream=True, timeout=30)
         
         if response.status_code != 200:
             error_text = response.text

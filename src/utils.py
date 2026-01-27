@@ -1,4 +1,9 @@
 import re
+from src.services.llm_groq import GroqLLM
+
+def get_llm():
+    """Returns the configured LLM instance."""
+    return GroqLLM()
 
 def strip_internal_markers(text):
     """

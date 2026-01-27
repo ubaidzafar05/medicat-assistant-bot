@@ -26,6 +26,10 @@ uvicorn = "*"
 jinja2 = "*"
 python-multipart = "*"
 gradio = "*"
+itsdangerous = "*"
+Authlib = "*"
+httpx = "*"
+python-dotenv = "*"
 
 [build-system]
 requires = ["poetry-core"]

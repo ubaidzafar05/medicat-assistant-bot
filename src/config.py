@@ -5,6 +5,10 @@
 # ==============================================================================
 
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # ------------------------------------------------------------------------------
 # 1. API Credentials
@@ -31,7 +35,19 @@ MODEL_NAME = "llama-3.3-70b-versatile"
 API_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 # ------------------------------------------------------------------------------
-# 3. Memory Architecture Settings
+# 4. Google Authentication
+# ------------------------------------------------------------------------------
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET", "")
+
+# ------------------------------------------------------------------------------
+# 5. Email Service (SMTP)
+# ------------------------------------------------------------------------------
+SMTP_USERNAME = os.getenv("SMTP_USERNAME", "")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
+
+# ------------------------------------------------------------------------------
+# 6. Memory Architecture Settings
 # ------------------------------------------------------------------------------
 # MAX_HISTORY_LIMIT: 
 # (Currently unused in app.py logic as we allow infinite session history, 
@@ -52,5 +68,3 @@ MEMORY_CONFIDENCE_THRESHOLD = 0.28
 # Phrases that indicate the medical agent has completed its diagnosis.
 # Used to unlock from MEDICAL mode.
 MEDICAL_COMPLETION_MARKERS = ["Final_Answer", "Possible Causes", "Next Steps", "Severity Level"]
-# deprecated.
-# How to Run: run python -m uvicorn web_app:app --host 127.0.0.1 --port 8000 --reload Then visit: http://127.0.0.1:8000

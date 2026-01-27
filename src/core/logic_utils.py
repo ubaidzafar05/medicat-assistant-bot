@@ -96,6 +96,16 @@ Instructions:
             yield chunk
         return
 
+    # 6. PRESCRIPTION
+    if action == "PRESCRIPTION":
+        prescription_agent = components.get("prescription_agent")
+        session_manager = components.get("session_manager")
+        user_id = session_manager.user_id if session_manager else "anonymous"
+        
+        for chunk in prescription_agent.run_streaming(user_input, user_id, history):
+            yield chunk
+        return
+
     # 6. CHAT (Enhanced Continuity)
     # Use intelligent state check instead of hardcoded keyword list
     session_manager = components.get("session_manager")
@@ -103,14 +113,14 @@ Instructions:
     is_mid_diagnosis = (action == "MEDICAL" or active_mode == "MEDICAL")
 
     system_instruction = f"""
-You are a warm, professional Medical Specialist.
+You are an Efficient Medical Assistant Bot. 
 Current Context: {'DIAGNOSING USER' if is_mid_diagnosis else 'GENERAL CONVERSATION'}
 
-- If the user says "Yes" or "No", they are answering your medical questions. 
-- NEVER say "How can I help you today?" if you were just discussing symptoms.
-- Continue the inquiry based on the Conversation History provided.
+- Be concise. 
+- If the user says "Yes" or "No", they are answering medical questions. 
+- Continue the inquiry based on history.
 """
-    prompt = f"User Input: '{user_input}'\nRespond naturally to this input as a doctor would during an exam."
+    prompt = f"User Input: '{user_input}'\nProvide a concise, professional medical response."
     
     for chunk in llm.stream(prompt, history=history, system_prompt=system_instruction):
         yield chunk

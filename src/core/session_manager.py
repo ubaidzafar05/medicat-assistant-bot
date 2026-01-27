@@ -50,22 +50,15 @@ class SessionManager:
     # --- SYMPTOM METHODS ---
     def save_symptom(self, symptom_code, severity, duration=None, metadata=None):
         """Saves a normalized symptom for the current user."""
-        if hasattr(self.db, 'add_symptom'):
-            self.db.add_symptom(self.user_id, symptom_code, severity, duration, metadata)
-        else:
-            print("[WARNING] Database method 'add_symptom' not found. Symptom not saved.")
+        self.db.add_symptom(self.user_id, symptom_code, severity, duration, metadata)
 
     def get_symptom_trends(self, days=30):
         """Gets symptom trend analysis for the current user."""
-        if hasattr(self.db, 'get_symptom_trends_summary'):
-            return self.db.get_symptom_trends_summary(self.user_id, days)
-        return {}
+        return self.db.get_symptom_trends_summary(self.user_id, days)
 
     def get_recent_symptoms(self, limit=10):
         """Gets recent symptoms for the current user."""
-        if hasattr(self.db, 'get_recent_symptoms'):
-            return self.db.get_recent_symptoms(self.user_id, limit)
-        return []
+        return self.db.get_recent_symptoms(self.user_id, limit)
 
 
     def verify_user(self, username, password):

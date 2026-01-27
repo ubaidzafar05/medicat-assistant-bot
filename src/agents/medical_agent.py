@@ -165,6 +165,9 @@ JSON FORMAT:
         """
         Executes the ReAct loop: Thought -> Action -> Observation
         """
+        # Immediately notify user that processing has started
+        yield "Thinking... Analyzing symptoms..."
+        
         # 1. Auto-extract and save any vitals mentioned in the user's message
         saved_vitals = self.auto_extract_and_save_vitals(user_input, session_manager)
 

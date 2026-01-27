@@ -1,11 +1,20 @@
 import axios from 'axios';
 
 const client = axios.create({
-    baseURL: 'http://127.0.0.1:8000',
+    baseURL: 'http://localhost:8000',
     headers: {
         'Content-Type': 'application/json',
     },
 });
+
+// Add response interceptor to unwrap data
+client.interceptors.response.use(
+    (response) => response.data,
+    (error) => {
+        // Optional: specific error handling (e.g., 401 logout) could go here
+        return Promise.reject(error);
+    }
+);
 
 export const register = (username, password) =>
     client.post('/auth/register', { username, password });
@@ -23,25 +32,30 @@ export const getHistory = (username) =>
     client.get(`/chat/history?username=${username}`);
 
 // Session management
+// Session management
 export const createNewChat = (username) =>
     client.post('/chat/new', { username });
 
 export const getSessions = (username, limit = 20) =>
     client.get(`/chat/sessions?username=${username}&limit=${limit}`);
 
-export const getSessionHistory = (username, sessionId) =>
+export const getSessionHistory = (sessionId, username) =>
     client.get(`/chat/history/${sessionId}?username=${username}`);
 
 export const switchSession = (username, sessionId) =>
     client.post(`/chat/switch/${sessionId}`, { username });
 
 // Streaming chat helper
-export const streamChat = async (username, userInput, onChunk, onComplete, onError) => {
+export const streamChat = async (username, userInput, sessionId, onChunk, onComplete, onError) => {
     try {
-        const response = await fetch('http://127.0.0.1:8000/chat/message', {
+        const response = await fetch('http://localhost:8000/chat/message', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, user_input: userInput })
+            body: JSON.stringify({
+                username,
+                user_input: userInput,
+                session_id: sessionId
+            })
         });
 
         if (!response.ok) {

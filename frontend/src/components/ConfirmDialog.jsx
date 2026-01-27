@@ -7,7 +7,7 @@ const ConfirmDialog = ({ isOpen, title, message, onConfirm, onCancel, confirmTex
 
     const variants = {
         default: {
-            confirmBtn: "bg-accent hover:bg-sky-400 text-slate-900",
+            confirmBtn: "bg-primary hover:bg-primary-hover text-white shadow-lg shadow-primary/20",
             icon: null
         },
         warning: {
@@ -32,7 +32,7 @@ const ConfirmDialog = ({ isOpen, title, message, onConfirm, onCancel, confirmTex
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onCancel}
-                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+                        className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50"
                     />
 
                     {/* Dialog */}
@@ -41,7 +41,7 @@ const ConfirmDialog = ({ isOpen, title, message, onConfirm, onCancel, confirmTex
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
                         className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50
-                            w-full max-w-md bg-slate-800 rounded-xl shadow-2xl border border-slate-700 p-6"
+                            w-full max-w-md bg-surface rounded-xl shadow-2xl border border-white/5 p-6"
                     >
                         {/* Close button */}
                         <button

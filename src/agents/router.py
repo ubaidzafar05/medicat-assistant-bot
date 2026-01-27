@@ -38,6 +38,7 @@ You are the Intent Router. Your job is to classify the USER'S INTENT using a ReA
 
 ### AVAILABLE ACTIONS:
 - MEDICAL: User discusses symptoms, physical sensations, or health concerns (e.g., "My head hurts", "I have a rash").
+- PRESCRIPTION: User asks to SET A REMINDER or SCHEDULE MEDICATION (e.g., "Remind me to take Panadol", "Schedule my meds").
 - TEACH: User shares A NEW PERSONAL FACT (e.g., "I am allergic to peanuts", "My name is John"). NEVER use for questions.
 - MEMORY: User asks a QUESTION about their own identity, history, or previous facts (e.g., "What am I allergic to?", "What is my name?", "Can I have this?").
 - SEARCH: User asks a QUESTION about general knowledge, medical facts, or recipes (e.g., "What is Vitamin C?", "How to bake bread").

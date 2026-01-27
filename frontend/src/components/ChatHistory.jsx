@@ -42,22 +42,30 @@ const ChatHistory = ({ sessions, activeSessionId, onSelectSession, loading }) =>
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: idx * 0.05 }}
                     onClick={() => onSelectSession(session.id)}
-                    className={`w-full text-left p-3 rounded-lg transition-all duration-200 group
+                    className={`w-full text-left p-3 rounded-lg transition-all duration-200 group relative overflow-hidden backdrop-blur-sm
                         ${activeSessionId === session.id
-                            ? 'bg-accent/20 border border-accent/50'
-                            : 'bg-slate-700/30 hover:bg-slate-700/60 border border-transparent'
+                            ? 'bg-primary/20 border border-primary/50 text-white'
+                            : 'bg-glass-input hover:bg-white/5 border border-transparent'
                         }`}
                 >
-                    <div className="flex items-start gap-3">
+                    {/* Active Indicator */}
+                    {activeSessionId === session.id && (
+                        <motion.div
+                            layoutId="activeIndicator"
+                            className="absolute left-0 top-0 bottom-0 w-1 bg-primary"
+                        />
+                    )}
+
+                    <div className="flex items-start gap-3 pl-2">
                         <MessageSquare className={`w-4 h-4 mt-1 flex-shrink-0 
-                            ${activeSessionId === session.id ? 'text-accent' : 'text-slate-500'}`}
+                            ${activeSessionId === session.id ? 'text-primary' : 'text-slate-400 group-hover:text-primary transition-colors'}`}
                         />
                         <div className="flex-1 min-w-0">
                             <div className={`text-sm font-medium truncate
-                                ${activeSessionId === session.id ? 'text-accent' : 'text-slate-300'}`}>
+                                ${activeSessionId === session.id ? 'text-white' : 'text-slate-300 group-hover:text-white transition-colors'}`}>
                                 {session.preview || 'New conversation'}
                             </div>
-                            <div className="flex items-center gap-2 mt-1 text-xs text-slate-500">
+                            <div className="flex items-center gap-2 mt-1 text-xs text-slate-500 group-hover:text-slate-400">
                                 <Clock className="w-3 h-3" />
                                 {formatDate(session.last_active)}
                                 <span className="text-slate-600">·</span>
