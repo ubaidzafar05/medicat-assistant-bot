@@ -167,7 +167,3 @@ Information is provided for educational and triage purposes only
 Always consult a licensed healthcare provider for medical advice
 
 If you experience emergency symptoms (e.g., chest pain, difficulty breathing, severe bleeding), contact emergency services immediately
-
-Make a Docker-ready README
-
-Just tell me how you plan to use this repo.
