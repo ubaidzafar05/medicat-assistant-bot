@@ -1,163 +1,115 @@
-"""
-Test script for Symptom Normalization and Structured Medical Responses
-"""
-import os
+import requests
+import json
 import sys
+import os
+from datetime import datetime
 
-# Ensure GROQ_API_KEY is set
-if not os.getenv('GROQ_API_KEY'):
-    print("ERROR: GROQ_API_KEY environment variable not set")
-    sys.exit(1)
+# Set up paths
+sys.path.append(os.getcwd())
 
-from src.agents.medical_agent import MedicalReActAgent
+# Base URL for API
+API_URL = "http://127.0.0.1:8000"
+USERNAME = "test_user_automation"
 
-class MockSessionManager:
-    """Mock session manager to capture normalized symptoms"""
-    def __init__(self):
-        self.saved_symptoms = []
-        self.saved_vitals = []
-    
-    def save_symptom(self, code, severity):
-        self.saved_symptoms.append({"code": code, "severity": severity})
-        print(f"  [OK] Normalized: {code} (severity: {severity})")
-    
-    def save_vital(self, vital_type, value, unit):
-        self.saved_vitals.append({"type": vital_type, "value": value, "unit": unit})
-        print(f"  [OK] Vital saved: {vital_type} = {value} {unit}")
-    
-    def get_recent_vitals(self, limit=5):
-        return []
-
-def test_symptom_normalization():
-    """Test the symptom normalization feature"""
-    print("=" * 60)
-    print("SYMPTOM NORMALIZATION TEST")
-    print("=" * 60)
-    
-    agent = MedicalReActAgent()
-    
-    test_cases = [
-        "I have a terrible headache",
-        "My stomach hurts and I feel nauseous", 
-        "Sharp pain in my chest",
-        "I have a fever and sore throat",
-        "Feeling dizzy and my back hurts",
-    ]
-    
-    all_results = []
-    for symptom in test_cases:
-        print(f"\nInput: \"{symptom}\"")
-        print("-" * 40)
+def test_llm_inference():
+    print("\n--- Testing LLM Frequency Inference ---")
+    try:
+        from src.agents.prescription_agent import infer_times_with_llm
         
-        mock_session = MockSessionManager()
-        result = agent.detect_symptom_codes(symptom, mock_session)
+        test_cases = [
+            "thrice daily",
+            "every 4 hours",
+            "at bedtime",
+            "with breakfast and dinner"
+        ]
         
-        if result:
-            all_results.extend(result)
-            for r in result:
-                print(f"  [OK] {r}")
+        for case in test_cases:
+            print(f"Input: '{case}'")
+            times = infer_times_with_llm(case)
+            print(f"Output: {times}")
+            if not times:
+                print("[FAIL] No times returned")
+            else:
+                print("[PASS] Success")
+    except Exception as e:
+        print(f"[ERROR] {e}")
+
+def test_api_flow():
+    print("\n--- Testing API Prescription Flow ---")
+    
+    # 1. Create Prescription
+    print(f"1. Creating prescription for user: {USERNAME}")
+    payload = {
+        "username": USERNAME,
+        "medicine_name": "TestMeds Automation",
+        "dosage": "500mg",
+        "frequency": "twice daily",
+        "times": ["09:00", "21:00"],
+        "instructions": "Take with water"
+    }
+    
+    try:
+        response = requests.post(f"{API_URL}/prescriptions", json=payload)
+        if response.status_code == 200:
+            data = response.json()
+            pres_id = data['id']
+            print(f"[PASS] Created Prescription ID: {pres_id}")
+            print(f"Response: {data}")
         else:
-            print("  (No symptoms detected - check LLM response)")
-        print()
-    
-    return all_results
-
-def test_vitals_extraction():
-    """Test the automatic vitals extraction feature"""
-    print("=" * 60)
-    print("VITALS EXTRACTION TEST")
-    print("=" * 60)
-    
-    agent = MedicalReActAgent()
-    
-    test_cases = [
-        "My heart rate is 95 bpm",
-        "Blood pressure reading was 120/80",
-        "Temperature is 101.5 fahrenheit",
-        "My pulse is around 72 beats per minute",
-        "heart rate 80 bpm and bp 130/85",
-    ]
-    
-    all_results = []
-    for vital_input in test_cases:
-        print(f"\nInput: \"{vital_input}\"")
-        print("-" * 40)
-        
-        mock_session = MockSessionManager()
-        result = agent.auto_extract_and_save_vitals(vital_input, mock_session)
-        
-        if result:
-            all_results.extend(result)
-            for r in result:
-                print(f"  [OK] {r}")
+            print(f"[FAIL] Failed to create prescription: {response.text}")
+            return
+            
+        # 2. Get Prescriptions
+        print("\n2. Fetching prescriptions list")
+        response = requests.get(f"{API_URL}/prescriptions?username={USERNAME}")
+        if response.status_code == 200:
+            pres_list = response.json()
+            found = False
+            for p in pres_list:
+                if p['id'] == pres_id:
+                    print(f"[PASS] Found created prescription in list: {p['medicine_name']}")
+                    found = True
+                    break
+            if not found:
+                print("[FAIL] Created prescription NOT found in list")
         else:
-            print("  (No vitals detected)")
-        print()
-    
-    return all_results
+            print(f"[FAIL] Failed to fetch prescriptions: {response.text}")
 
-def test_vitals_regex_directly():
-    """Test the regex patterns directly"""
-    print("=" * 60)
-    print("REGEX PATTERN DEBUG TEST")
-    print("=" * 60)
-    
-    import re
-    
-    # These are the patterns from medical_agent.py
-    vital_patterns = [
-        (r'heart\s*rate.*?(\d{2,3})', 'Heart Rate', 'bpm'),
-        (r'heartbeat.*?(\d{2,3})', 'Heart Rate', 'bpm'),
-        (r'pulse.*?(\d{2,3})', 'Heart Rate', 'bpm'),
-        (r'(\d{2,3})\s*(?:bpm|beats)', 'Heart Rate', 'bpm'),
-        (r'blood\s*pressure.*?(\d{2,3}[/]\d{2,3})', 'Blood Pressure', 'mmHg'),
-        (r'bp.*?(\d{2,3}[/]\d{2,3})', 'Blood Pressure', 'mmHg'),
-        (r'(\d{2,3}[/]\d{2,3})\s*(?:mmhg|mm)', 'Blood Pressure', 'mmHg'),
-        (r'temperature.*?(\d{2,3}\.?\d?)', 'Temperature', 'F'),
-        (r'temp.*?(\d{2,3}\.?\d?)\s*(?:f|fahrenheit)', 'Temperature', 'F'),
-    ]
-    
-    test_inputs = [
-        "my heart rate is 95 bpm",
-        "blood pressure reading was 120/80",
-        "temperature is 101.5 fahrenheit",
-        "pulse is around 72 beats",
-        "95 bpm heart rate",
-    ]
-    
-    for input_text in test_inputs:
-        print(f"\nInput: \"{input_text}\"")
-        print("-" * 40)
-        input_lower = input_text.lower()
-        
-        found = False
-        for pattern, vital_type, unit in vital_patterns:
-            match = re.search(pattern, input_lower)
-            if match:
-                print(f"  MATCH: {vital_type} = {match.group(1)} {unit}")
-                print(f"  Pattern: {pattern}")
-                found = True
-        
-        if not found:
-            print("  NO MATCH")
+        # 3. Get Reminders
+        print("\n3. Checking scheduled reminders")
+        response = requests.get(f"{API_URL}/reminders?username={USERNAME}")
+        if response.status_code == 200:
+            reminders = response.json()
+            print(f"Found {len(reminders)} reminders")
+            if len(reminders) > 0:
+                print(f"Sample reminder: {reminders[0]}")
+                print("[PASS] Reminders generated successfully")
+            else:
+                print("[FAIL] No reminders generated")
+        else:
+            print(f"[FAIL] Failed to fetch reminders: {response.text}")
+
+        # 4. Delete Prescription
+        print(f"\n4. Deleting prescription ID: {pres_id}")
+        response = requests.delete(f"{API_URL}/prescriptions/{pres_id}?username={USERNAME}")
+        if response.status_code == 200:
+            print("[PASS] Prescription deactivated successfully")
+        else:
+            print(f"[FAIL] Failed to delete: {response.text}")
+
+        # 5. Verify Deletion
+        print("\n5. Verifying deletion")
+        response = requests.get(f"{API_URL}/prescriptions?username={USERNAME}")
+        pres_list = response.json()
+        active = any(p['id'] == pres_id for p in pres_list)
+        if not active:
+            print("[PASS] Prescription is no longer in active list")
+        else:
+            print("[FAIL] Prescription still exists in active list")
+
+    except Exception as e:
+        print(f"[ERROR] API Connection Error: {e} (Is the server running?)")
 
 if __name__ == "__main__":
-    print("\n" + "=" * 60)
-    print("NEURALFLOW MEDICAL CHATBOT - FEATURE TESTS")
-    print("=" * 60 + "\n")
-    
-    # Test regex directly first
-    test_vitals_regex_directly()
-    
-    # Test 1: Vitals Extraction (uses regex only, no LLM)
-    vitals_results = test_vitals_extraction()
-    
-    # Test 2: Symptom Normalization (uses LLM)
-    symptom_results = test_symptom_normalization()
-    
-    print("\n" + "=" * 60)
-    print("SUMMARY")
-    print("=" * 60)
-    print(f"Vitals extracted: {len(vitals_results)}")
-    print(f"Symptoms normalized: {len(symptom_results)}")
-    print("=" * 60)
+    test_llm_inference()
+    test_api_flow()
