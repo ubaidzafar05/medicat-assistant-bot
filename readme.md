@@ -1,169 +1,82 @@
-🏥 NeuralFlow Medical Assistant
+# NeuralFlow Medical Assistant
 
-NeuralFlow is an AI-powered medical triage and health-management assistant designed to act as an intelligent first-line support system.
-It leverages a ReAct (Reasoning + Acting) framework to analyze symptoms, ask clinically relevant follow-up questions, and provide structured, explainable insights.
+NeuralFlow is an AI-powered medical triage and health-management assistant. It combines intent routing, ReAct-style medical reasoning, long-term memory, prescription tracking, and reminder scheduling in one FastAPI + React workspace.
 
-⚠️ Important: NeuralFlow is not a medical device and does not provide medical diagnoses. It is intended for informational and triage support only.
+> Not a medical device. This project is intended for informational and triage support only.
 
-✨ Features
-🧠 Intelligent Medical Reasoning
+## Architecture
 
-ReAct Clinical Engine
-Applies step-by-step reasoning to evaluate symptom clusters and possible differentials.
+- FastAPI exposes chat, auth, vitals, prescriptions, sessions, and reminder endpoints.
+- The router classifies each message into medical, memory, search, teaching, prescription, or chat flows.
+- The medical agent handles symptom analysis and follow-up questions.
+- The memory brain stores user facts in ChromaDB and retrieves them when context matters.
+- The prescription agent and APScheduler-based reminder service manage medication schedules and email reminders.
+- The React/Vite frontend handles chat, history, vitals, prescriptions, and OAuth login.
 
-Dynamic Symptom Interviewing
-Automatically asks clarifying questions when key clinical information is missing.
+```mermaid
+graph LR
+  user["User"] --> ui["React UI"]
+  ui --> api["FastAPI API"]
+  api --> router["Intent Router"]
+  router --> med["Medical Agent"]
+  router --> mem["Memory Brain"]
+  router --> rx["Prescription Scheduler"]
+  med --> llm["Groq LLM"]
+  mem --> db["SQLite + ChromaDB"]
+  rx --> mail["Email Reminders"]
+```
 
-Structured Responses
-Outputs are organized into:
+## Problem + Solution
 
-Possible Causes
+**Problem:** medical conversations are fragmented, context is easy to lose, and reminder workflows usually live in separate tools.
 
-Severity Assessment
+**Solution:** route every message to the right workflow, persist memory and vitals, and keep prescriptions and reminders in the same assistant so the user gets a single source of truth.
 
-Recommended Actions
+## Tech Stack
 
-🚨 Red Flags
+- Python 3.11
+- FastAPI
+- LangChain
+- Groq
+- ChromaDB
+- SQLite
+- APScheduler
+- Authlib
+- bcrypt
+- React
+- Vite
+- Tailwind CSS
+- Framer Motion
+- Lucide React
 
-💊 Health Management
+## Key Features
 
-Medication Tracking
-Track active prescriptions, dosages, and schedules.
+- Symptom triage with clarifying follow-up questions
+- Persistent memory for allergies, conditions, and personal facts
+- Medication tracking and reminder scheduling
+- Vitals logging for health trends
+- Google OAuth login
+- Search and general knowledge routing
 
-Vitals Logging
-Extracts and stores vitals such as Heart Rate, Blood Pressure, and SpO₂ from conversations.
+## Run Locally
 
-Smart Reminders
-Supports medication adherence through scheduled reminders.
+Backend:
 
-💾 Long-Term Context & Memory
-
-Retrieval-Augmented Generation (RAG)
-Uses a vector database to retain medical history and prior interactions.
-
-Trend Awareness
-Enables detection of recurring or worsening symptom patterns over time.
-
-🎨 User Interface
-
-Modern UI (“Viral Health” Theme)
-Glassmorphism-inspired components and dynamic gradients.
-
-Responsive Design
-Optimized for desktop and mobile.
-
-Smooth Animations
-Powered by Framer Motion.
-
-🛠️ Tech Stack
-Backend
-
-Python 3.11+
-
-FastAPI – High-performance async API
-
-LangChain – Agent orchestration and ReAct loop
-
-Groq LLM – Low-latency inference
-
-ChromaDB – Local vector database for RAG
-
-Authlib – OAuth authentication (Google)
-
-Frontend
-
-React + Vite
-
-Tailwind CSS
-
-Framer Motion
-
-Lucide React
-
-🚀 Getting Started
-Prerequisites
-
-Python 3.11 or newer
-
-Node.js 18 or newer
-
-A local chroma/ directory will be created automatically
-
-Backend Setup
-# Clone the repository
-git clone <your-repo-url>
-cd simple_chatbot
-
-# Create and activate a virtual environment (recommended)
+```bash
 python -m venv venv
-
-# Windows
-.\venv\Scripts\activate
-
-# macOS / Linux
 source venv/bin/activate
-
-# Install dependencies
 pip install -r requirements.txt
-# or (if using Poetry)
-poetry install
-
-# Run the API server
 python -m src.api
+```
 
+Frontend:
 
-Backend runs at:
-http://localhost:8000
-
-Frontend Setup
+```bash
 cd frontend
 npm install
 npm run dev
+```
 
+## Safety Note
 
-Frontend runs at:
-http://localhost:5173
-
-🔑 Environment Variables
-
-Create a .env file in the project root.
-Never commit this file to GitHub.
-
-# AI Provider
-GROQ_API_KEY=your_groq_api_key_here
-
-# Google OAuth
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-GOOGLE_REDIRECT_URI=http://localhost:8000/auth/google/callback
-
-# JWT Configuration
-JWT_SECRET_KEY=change_this_to_a_secure_random_value
-JWT_ALGORITHM=HS256
-JWT_EXPIRATION_HOURS=24
-
-
-📌 Security Notes
-
-Add .env to .gitignore
-
-Rotate keys if they are ever exposed
-
-Use environment variables in production (Docker, CI/CD, or cloud secrets)
-
-🧪 Testing
-
-The project includes automated tests covering core workflows and deployment sanity checks.
-
-python -m pytest tests/test_deployment.py
-
-⚠️ Medical Disclaimer
-
-NeuralFlow is not a doctor or a medical professional.
-It does not provide diagnoses or treatment plans.
-
-Information is provided for educational and triage purposes only
-
-Always consult a licensed healthcare provider for medical advice
-
-If you experience emergency symptoms (e.g., chest pain, difficulty breathing, severe bleeding), contact emergency services immediately
+NeuralFlow is not a substitute for a doctor or licensed medical professional. If symptoms are severe or urgent, seek medical care immediately.
